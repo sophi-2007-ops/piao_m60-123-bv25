@@ -1,5 +1,5 @@
 from src.db.backend.memory import (
-    insert_into,
+    create_record,
     select_record,
     update_record,
     delete_record,
@@ -29,23 +29,21 @@ def _read_int(promt: str) -> int:
 
 
 def _add_person() -> None:
+    
     print("\nДобавление записи")
-
-    table_name = input("В какую таблицу добавить запись? ").strip()
-
+    
     person_id = _read_int("id: ")
     first_name = input("first_name: ").strip()
     second_name = input("second_name: ").strip()
     age = _read_int("age: ")
     sex = input("sex: ").strip()
     phone_number = input("phone_number: ").strip()
-
+    
     new_data = (person_id, first_name, second_name, age, sex, phone_number)
 
     try:
-        insert_into(table_name, new_data)
-        print(f"Запись {new_data} успешно добавлена в таблицу {table_name}")
-
+        create_record(person_id, first_name, second_name, age, sex, phone_number)
+        print(f"Запись {new_data} успешно добавлена в таблицу People")
     except ValueError as exc:
         print(f"Ошибка: {exc}")
 
@@ -127,7 +125,7 @@ def _update_record() -> None:
         updates["phone_number"] = new_phone_number
 
     if updates:
-        update_record("People", person_id_for_update, **updates)
+        update_record(person_id_for_update, **updates)
         print("Запись обновлена")
     else:
         print("Изменений не внесено")
@@ -137,8 +135,8 @@ def _delete_record() -> None:
     print("\nУдаление записи")
     person_id_for_delete = _read_int("Введите id для удаления записи ")
 
-    if delete_record("People", person_id_for_delete):
-        print(f"Запись {id} успешно удалена")
+    if delete_record(person_id_for_delete):
+        print(f"Запись {person_id_for_delete} успешно удалена")
     else:
         print("Ошибка! Запись не найдена")
 

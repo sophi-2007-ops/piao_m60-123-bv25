@@ -1,12 +1,11 @@
+import re
+from typing import Optional
+
 PersonData = tuple[int, str, str, int, str, str]
 
-Database: dict[str, list] = {"People": []}
+People: list[PersonData] = []
 
-
-def insert_into(table_name: str, data: tuple):
-    if table_name not in Database:
-        raise ValueError(f"Таблица {table_name} отсутствует")
-    Database[table_name].append(data)
+phone_mask = r"^\+7 \(\d{3}\) \d{3}-\d{2}-\d{2}$"
 
 
 def create_record(
@@ -14,16 +13,18 @@ def create_record(
     first_name: str,
     second_name: str,
     age: int,
-    sex: int,
+    sex: str,
     phone_number: str,
 ) -> PersonData:
     if age < 0:
         raise ValueError("Возраст не может быть отрицательным")
 
-    if len(phone_number) != 12 and phone_number[:2] != "+7":
-        raise ValueError("Некорректный номер. Номер должен начинаться с +7")
+    phone_number = phone_number.strip()
 
-    if any(record[0] == person_id for record in Database["People"]):
+    if not re.match(phone_mask, phone_number):
+        raise ValueError("Некорректный номер. Номер должен должен быть в формате с +7 (xxx) xxx-xx-xx")
+
+    if any(record[0] == person_id for record in People):
         raise ValueError(f"Запись с id={person_id} уже существует")
 
     new_record: PersonData = (
@@ -32,35 +33,32 @@ def create_record(
         second_name.strip(),
         age,
         sex.strip(),
-        phone_number.strip(),
+        phone_number.strip()
     )
 
-    Database["People"].append(new_record)
+    People.append(new_record)
 
     return new_record
 
 
 def select_record(
-    table_name: str = "People",
-    person_id: int | None = None,
-    first_name: str | None = None,
-    second_name: str | None = None,
-    age: int | None = None,
-    sex: int | None = None,
-    phone_number: str | None = None,
+    person_id: Optional[int] = None,
+    first_name: Optional[str] = None,
+    second_name: Optional[str] = None,
+    age: Optional[int] = None,
+    sex: Optional[str] = None,
+    phone_number: Optional[str] = None,
 ) -> list[PersonData]:
-    if (
-        person_id is None
-        and first_name is None
-        and second_name is None
-        and age is None
-        and sex is None
-        and phone_number is None
-    ):
-        return Database["People"].copy()
+    if (person_id is None and 
+        first_name is None and 
+        second_name is None and 
+        age is None and 
+        sex is None and 
+        phone_number is None):
+        return People.copy()
     result: list[PersonData] = []
 
-    for record in Database["People"]:
+    for record in People:
         if person_id is not None and record[0] != person_id:
             continue
         if first_name is not None and record[1] != first_name:
@@ -78,10 +76,9 @@ def select_record(
     return result
 
 
-def update_record(table_name: str = "People", person_id: int = None, **kwargs) -> bool:
-    if table_name not in Database:
-        return False
-    for i, record in enumerate(Database[table_name]):
+def update_record(person_id: int = None, **kwargs) -> bool:
+    global People
+    for i, record in enumerate(People):
         if record[0] == person_id:
             record_list = list(record)
 
@@ -97,21 +94,18 @@ def update_record(table_name: str = "People", person_id: int = None, **kwargs) -
                 if key in mapping:
                     record_list[mapping[key]] = value
 
-            Database[table_name][i] = tuple(record_list)
+            People = tuple(record_list)
             return True
     return False
 
 
-def delete_record(table_name: str = "People", person_id: int = None) -> bool:
-    if table_name not in Database:
-        return False
-    i_len = len(Database[table_name])
-    Database[table_name] = [r for r in Database[table_name] if r[0] != person_id]
-    return len(Database[table_name]) < i_len
+def delete_record(person_id: int = None) -> bool:
+    global People
+    i_len = len(People)
+    People = [r for r in People if r[0] != person_id]
+    return len(People) < i_len
 
 
-def clear_table(table_name: str = "People") -> bool:
-    if table_name not in Database:
-        return False
-    Database[table_name].clear()
+def clear_table() -> bool:
+    People.clear()
     return True
