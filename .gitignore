@@ -1,3 +1,5 @@
 .vscode/
 *.log
 src/db/backend/__pycashe__/
+src/db/__pycashe__/
+
