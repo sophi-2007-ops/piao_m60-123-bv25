@@ -1,8 +1,11 @@
-from .tui import run
+from src.db.backend.memory import MemoryDB
+from src.db.tui import Interface
 
 
 def main():
-    run()
+    repository = MemoryDB()
+    app = Interface(repository=repository)
+    app.run()
 
 
 if __name__ == "__main__":
