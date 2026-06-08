@@ -1,2 +1,5 @@
 .vscode/
 *.log
+src/db/backend/__pycache__/
+src/db/__pycache__/
+
