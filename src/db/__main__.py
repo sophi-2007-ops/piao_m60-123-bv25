@@ -1,9 +1,5 @@
-from .tui import run
-
-
-def main():
-    run()
-
+from src.db.tui import Interface
 
 if __name__ == "__main__":
-    main()
+    app = Interface()
+    app.run()
