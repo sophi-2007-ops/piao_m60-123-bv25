@@ -55,5 +55,6 @@ class FileDatabase_JSON(Database):
 
         columns = tuple(data["columns"])
         table = Table(columns)
-        table.records = data.get("records", [])
+        for record in data.get("records", []):
+            table.insert_record(record)
         return table

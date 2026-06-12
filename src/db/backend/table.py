@@ -1,5 +1,5 @@
 from typing import Any
-from .errors import MissingColumnError, UnknownColumnError, DublicateIDError, InvalidPhoneError, InvalidAgeError
+from .errors import MissingColumnError, UnknownColumnError, DuplicateIDError, InvalidPhoneError, InvalidAgeError
 import re
 
 phone_mask = r"^\+7 \(\d{3}\) \d{3}-\d{2}-\d{2}$"
@@ -20,8 +20,12 @@ class Table:
     
     def validate_fields(self, data: dict[str, Any]) -> None:
         if "age" in data:
-            if int(data["age"]) < 0:
-                raise InvalidAgeError("Возраст не может быть отрицательным")
+            try:
+                if int(data["age"]) < 0:
+                    raise InvalidAgeError("Возраст не может быть отрицательным")
+            except ValueError:
+                raise InvalidAgeError("Возраст должен быть числом")
+            
         if "phone_number" in data:
             if not re.match(phone_mask,str(data["phone_number"]).strip()):
                 raise InvalidPhoneError("Некорректный номер. Формат: +7 (xxx) xxx-xx-xx")
@@ -40,7 +44,7 @@ class Table:
             )
         record_id = record.get(self.columns[0])
         if any(r.get(self.columns[0]) == record_id for r in self.records):
-            raise DublicateIDError(f"Запись с id={record_id} уже существует")
+            raise DuplicateIDError(f"Запись с id={record_id} уже существует")
         self.validate_fields(record)
         self.records.append(record.copy())
 
@@ -68,6 +72,11 @@ class Table:
                 f"Поле '{unknown_fields[0]}' не определено в структуре таблицы."
             )
         self.validate_fields(kwargs)
+        if self.columns[0] in kwargs:
+            new_id = kwargs[self.columns[0]] == record_id
+            if any(r.get(self.columns[0]) == new_id for r in self.records):
+                raise DuplicateIDError(f"Запись с id={new_id} уже существует")
+            
         for i, record in enumerate(self.records):
             if record.get(self.columns[0]) == record_id:
                 updated = record.copy()

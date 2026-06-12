@@ -10,7 +10,7 @@ class InvalidPhoneError(RepositoryError):
     pass
 
 
-class DublicateIDError(RepositoryError):
+class DuplicateIDError(RepositoryError):
     pass
 
 

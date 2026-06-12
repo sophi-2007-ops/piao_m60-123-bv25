@@ -78,5 +78,6 @@ class FileDatabase_CSV(Database):
 
     def _deserialize_table(self, columns: tuple, records: list) -> Table:
         table = Table(columns)
-        table.records = records
+        for record in records:
+            table.insert_record(record)
         return table

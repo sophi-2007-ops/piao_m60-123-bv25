@@ -70,9 +70,9 @@ class TestTui(unittest.TestCase):
         with patch("builtins.input", side_effect=inputs):
             with patch("builtins.print") as mock_print:
                 self.app._update_record_with_id()
-                mock_print.assert_any_call(
-                    unittest.mock.ANY  
-                )
+                mock_print.assert_any_call("Ошибка при обновлении: Возраст не может быть отрицательным")
+        record = self.app.database.select_records("people", id=1)[0]
+        self.assertEqual(record["age"], 20)
 
     def test_delete_record(self):
         self._add_record()

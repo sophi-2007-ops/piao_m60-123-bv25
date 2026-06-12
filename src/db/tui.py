@@ -1,5 +1,5 @@
 from src.db.backend.memory import MemoryDB
-from src.db.backend.errors import InvalidAgeError, InvalidPhoneError, DublicateIDError
+from src.db.backend.errors import InvalidAgeError, InvalidPhoneError, DuplicateIDError, TableAlreadyExistsError
 from src.db.backend.file_json import FileDatabase_JSON
 from src.db.backend.file_csv import FileDatabase_CSV
 
@@ -20,11 +20,10 @@ class Interface:
         else:
             self.database = MemoryDB()
 
-        if not self.database._table_exists("people"):
-            self.database.create_table(
-                "people",
-                ("id", "first_name", "second_name", "age", "sex", "phone_number"),
-            )
+        try:
+            self.database.create_table("people", ("id", "first_name", "second_name", "age", "sex", "phone_number"))
+        except TableAlreadyExistsError("Таблица уже существует"):
+            pass
 
     def _print_menu(self) -> None:
         print("\n=== База данных клиентов ===")
@@ -70,7 +69,7 @@ class Interface:
                 },
             )
             print(f"Запись {new_data} успешно добавлена в таблицу people")
-        except (InvalidPhoneError, InvalidAgeError, DublicateIDError) as exc:
+        except (InvalidPhoneError, InvalidAgeError, DuplicateIDError) as exc:
             print(f"Ошибка: {exc}")
 
     def _print_records(self, records: list[dict]) -> None:

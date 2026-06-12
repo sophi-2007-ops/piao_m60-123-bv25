@@ -1,6 +1,6 @@
 import unittest
 from src.db.backend.memory import MemoryDB
-from src.db.backend.errors import InvalidAgeError, InvalidPhoneError, DublicateIDError
+from src.db.backend.errors import InvalidAgeError, InvalidPhoneError, DuplicateIDError, TableNotFoundError
 
 
 class TestMemoryDB(unittest.TestCase):
@@ -26,7 +26,7 @@ class TestMemoryDB(unittest.TestCase):
             "id": 1, "first_name": "Иван", "second_name": "Иванов",
             "age": 20, "sex": "M", "phone_number": "+7 (999) 111-22-33"
         })
-        with self.assertRaises(DublicateIDError):
+        with self.assertRaises(DuplicateIDError):
             self.repo.insert_record("people", {
                 "id": 1, "first_name": "Пётр", "second_name": "Петров",
                 "age": 14, "sex": "M", "phone_number": "+7 (991) 111-22-33"
@@ -111,6 +111,5 @@ class TestMemoryDB(unittest.TestCase):
         self.assertEqual(len(self.repo.select_records("people")), 0)
 
     def test_load_table_not_found(self):
-        from src.db.backend.errors import TableNotFoundError
         with self.assertRaises(TableNotFoundError):
-            self.repo._load_table("Таблицы не существует")
+            self.repo.select_records("Таблицы не существует")

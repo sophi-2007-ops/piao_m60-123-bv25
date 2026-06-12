@@ -3,7 +3,7 @@ import shutil
 from src.db.backend.file_json import FileDatabase_JSON
 from src.db.backend.file_csv import FileDatabase_CSV
 from src.db.backend.errors import (
-    InvalidAgeError, InvalidPhoneError, DublicateIDError,
+    InvalidAgeError, InvalidPhoneError, DuplicateIDError,
     TableAlreadyExistsError, TableNotFoundError
 )
 
@@ -46,7 +46,7 @@ class BaseFileDatabaseTest:
 
     def test_insert_duplicate_id(self):
         self.repo.insert_record("people", VALID_RECORD)
-        with self.assertRaises(DublicateIDError):
+        with self.assertRaises(DuplicateIDError):
             self.repo.insert_record("people", VALID_RECORD)
 
     def test_insert_invalid_age(self):
@@ -127,3 +127,4 @@ class TestFileDatabaseCSV(BaseFileDatabaseTest, unittest.TestCase):
 
 if __name__ == "__main__":
     unittest.main()
+    
