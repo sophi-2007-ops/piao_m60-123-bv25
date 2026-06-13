@@ -22,7 +22,7 @@ class Interface:
 
         try:
             self.database.create_table("people", ("id", "first_name", "second_name", "age", "sex", "phone_number"))
-        except TableAlreadyExistsError("Таблица уже существует"):
+        except TableAlreadyExistsError:
             pass
 
     def _print_menu(self) -> None:

@@ -17,7 +17,7 @@ class Table:
         if records is not None:
             for record in records:
                 self.insert_record(record)
-    
+
     def validate_fields(self, data: dict[str, Any]) -> None:
         if "age" in data:
             try:
@@ -25,10 +25,15 @@ class Table:
                     raise InvalidAgeError("Возраст не может быть отрицательным")
             except ValueError:
                 raise InvalidAgeError("Возраст должен быть числом")
-            
+
         if "phone_number" in data:
             if not re.match(phone_mask,str(data["phone_number"]).strip()):
                 raise InvalidPhoneError("Некорректный номер. Формат: +7 (xxx) xxx-xx-xx")
+    
+    def check_duplicate(self, record: dict) -> None:
+        record_id = record.get(self.columns[0])
+        if any(r.get(self.columns[0]) == record_id for r  in self.records):
+            raise DuplicateIDError(f"Запись с id='{record_id} уже существует")
 
     def insert_record(self, record: dict[str, Any]) -> None:
         missing_columns = [column for column in self.columns if column not in record]
@@ -42,9 +47,8 @@ class Table:
             raise UnknownColumnError(
                 f"Поле '{extra_columns[0]}' не определено в структуре таблицы."
             )
-        record_id = record.get(self.columns[0])
-        if any(r.get(self.columns[0]) == record_id for r in self.records):
-            raise DuplicateIDError(f"Запись с id={record_id} уже существует")
+
+        self.check_duplicate(record)
         self.validate_fields(record)
         self.records.append(record.copy())
 
@@ -64,7 +68,7 @@ class Table:
                 result.append(record.copy())
 
         return result
-    
+
     def update_record_with_id(self, record_id, **kwargs) -> bool:
         unknown_fields = [key for key in kwargs if key not in self.columns]
         if unknown_fields:
@@ -73,10 +77,11 @@ class Table:
             )
         self.validate_fields(kwargs)
         if self.columns[0] in kwargs:
-            new_id = kwargs[self.columns[0]] == record_id
-            if any(r.get(self.columns[0]) == new_id for r in self.records):
-                raise DuplicateIDError(f"Запись с id={new_id} уже существует")
-            
+            new_id = kwargs[self.columns[0]]
+            for r in self.records:
+                if r.get(self.columns[0] != record_id):
+                    raise DuplicateIDError(f"Запись с id={new_id} уже существует")
+
         for i, record in enumerate(self.records):
             if record.get(self.columns[0]) == record_id:
                 updated = record.copy()
@@ -85,7 +90,7 @@ class Table:
                 self.records[i] = updated
                 return True
         return False
-    
+
     def delete_record(self, record_id) -> bool:
         i_len = len(self.records)
         self.records = [
@@ -93,8 +98,7 @@ class Table:
             if r.get(self.columns[0]) != record_id
         ]
         return len(self.records) < i_len
-    
+
     def clear_all_table(self) -> bool:
         self.records.clear()
         return True
-    

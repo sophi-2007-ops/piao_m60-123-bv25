@@ -1,7 +1,7 @@
 import csv
 from pathlib import Path
 from .database import Database
-from .errors import InvalidStorageDataError, TableNotFoundError
+from .errors import InvalidStorageDataError, TableNotFoundError, DuplicateIDError
 from .table import Table
 
 
@@ -42,21 +42,23 @@ class FileDatabase_CSV(Database):
 
     def _save_table(self, table_name: str, table: Table) -> None:
         table_path = self._get_table_path(table_name)
-
-        with table_path.open("w", encoding="utf-8", newline="") as file:
-            writer = csv.writer(file)
-            writer.writerow(table.columns)  
-            if table.records:
-                types = [
-                    type(table.records[0][col]).__name__
-                    for col in table.columns
-                ]
-            else:
-                types = ["str"] * len(table.columns)
-            writer.writerow(types)
-
-            for record in table.records:
-                writer.writerow([record[col] for col in table.columns])
+        try: 
+            with table_path.open("w", encoding="utf-8", newline="") as file:
+                writer = csv.writer(file)
+                writer.writerow(table.columns)  
+                types ={
+                    "id": "int",
+                    "first_name": "str",
+                    "second_name": "str",
+                    "age": "int",
+                    "sex": "str",
+                    "phone_number": "str"
+                }
+                writer.writerow([types.get(col, "str") for col in table.columns])
+                for record in table.records:
+                    writer.writerow([record[col] for col in table.columns])
+        except OSError:
+            raise InvalidStorageDataError(f"Ошибка записи файла таблицы '{table_name}'")
 
     def cast_value(self, value: str, type_name: str):
         casters = {
@@ -78,6 +80,11 @@ class FileDatabase_CSV(Database):
 
     def _deserialize_table(self, columns: tuple, records: list) -> Table:
         table = Table(columns)
+        ids = set()
         for record in records:
-            table.insert_record(record)
+            record_id = record.get(columns[0])
+            if record_id in ids:
+                raise DuplicateIDError(f"Файл содержит дубликат id={record_id}")
+            ids.add(record_id)
+            table.records.append(record.copy())
         return table
