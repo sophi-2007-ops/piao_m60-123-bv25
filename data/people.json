@@ -1,0 +1,11 @@
+{
+  "columns": [
+    "id",
+    "first_name",
+    "second_name",
+    "age",
+    "sex",
+    "phone_number"
+  ],
+  "records": []
+}
